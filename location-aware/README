@@ -3,8 +3,7 @@ https://docs.aws.amazon.com/a4b/latest/ag/getting-started.html
 
 Note that this is not GPS / address awareness.  If a user grants permissions to disclose their device address, an Alexa skill can discover the location of the user's device which is useful for purposes of fulfilling their request."  Order a pizza," for example, might discover the user's address to check pricing or delivery range.
 
-However, for enterprise skills, oftentimes the address isn't enough- for example, knowing which conference room the request is coming from may be important for a Help Desk skill.
-"Tell Help Desk the projector lamp needs to be replaced," would not work.  Making the user find out what room they're in (by which time the skill may have timed out) and then speak the room name, adds unwanted friction into the experience.
+However, for enterprise skills, oftentimes the address isn't enough- for example, knowing which conference room the request is coming from may be important for a Help Desk skill.  "With Alexa for Business, a device can be assigned to a specific conference room, so that when someone in that room says  "Tell Help Desk the projector lamp needs to be replaced", the skill can determine the room without the user having to provide that information.
 
 Thus having the skill call resolveRoom to get the room name is often beneficial for skills that need location awareness.  (Think also, use cases involving print/copy stations, kitchen equipment, utility meters, and so on)
 
