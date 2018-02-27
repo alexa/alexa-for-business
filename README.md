@@ -1,6 +1,6 @@
 ## Alexa for Business
 
-This repository holds short helper code samples, that demonstrate how to achieve certain functionality with enterprise Alexa skills, and in particular with [Alexa for Business] (aws.amazon.com/a4b). Some samples are more complete, such as the Help Desk skill, but others will focus on specific components of a use case or integration.
+This repository holds short helper code samples, that demonstrate how to achieve certain functionality with enterprise Alexa skills, and in particular with [Alexa for Business] (https://aws.amazon.com/a4b). Some samples are more complete, such as the Help Desk skill, but others will focus on specific components of a use case or integration.
 
 ### A quick word on private skills
 Presumably you're here because you're interested in developing enterprise skills for your company.  Alexa for Business provides a management framework, native functionality for business environments such as a "join the meeting" intent, and a new Alexa skill deployment construct called "private skills" where developers publish skills whitelisted for use only by a specific set of organizations.  You can learn more about private skills in these resources:
