@@ -5,7 +5,7 @@ Note that this is not GPS / address awareness.  If a user grants the appropriate
 
 However, for enterprise skills, oftentimes the address isn't enough- for example, knowing which conference room the request is coming from may be important for a Help Desk skill.  With Alexa for Business, a device can be assigned to a specific conference room, so that when someone in that room says, "Tell Help Desk the projector lamp needs to be replaced", the skill can determine the room name without the user having to provide that information.
 
-Location awareness provided by resolveRoom may also be useful for scenarios involving print/copy stations, kitchen equipment, utility meters, and so on.
+Location awareness provided by Alexa for Business' resolveRoom API may also be useful for scenarios involving print/copy stations, kitchen equipment, utility meters, and so on.
 
 You can read more about the resolveRoom API here:
 https://docs.aws.amazon.com/a4b/latest/APIReference/API_ResolveRoom.html
