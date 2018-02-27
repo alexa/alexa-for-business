@@ -1,0 +1,7 @@
+Here you'll find skill samples that are location aware using Alexa for Business' resolveRoom API.
+
+If a user grants permissions to disclose their device address, any Alexa skill can discover the location of the user's device.
+However, for enterprise skills, oftentimes the address isn't enough- for example, knowing which conference room the request is coming from may be important for an AV Assist skill.
+
+Check the resolveRoom API here:
+<a href="https://docs.aws.amazon.com/a4b/latest/APIReference/API_ResolveRoom.html">https://docs.aws.amazon.com/a4b/latest/APIReference/API_ResolveRoom.html</a>
