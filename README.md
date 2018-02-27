@@ -13,7 +13,7 @@ Alexa Developer docs: [Create and Publish Private Skills ](https://developer.ama
 ### Prerequisites
 We'll walk through the sample skills in a detailed manner in the individual README files, so advanced knowledge of Alexa skill development shouldn't be necessary.  However, we do recommend exploring the excellent samples found in the Alexa repository in general, such as the [Alexa cookbook](https://github.com/alexa/alexa-cookbook).
 
-We also recommend checking out Alexa for Business' [Getting Started](https://aws.amazon.com/alexaforbusiness/getting-started/) page and building a basic [fact skill](https://developer.amazon.com/alexa-skills-kit/tutorials/fact-skill-1) if you've never developed an Alexa skill before.  
+We also recommend checking out the [Alexa for Business Getting Started](https://aws.amazon.com/alexaforbusiness/getting-started/) page, and building a basic [fact skill](https://developer.amazon.com/alexa-skills-kit/tutorials/fact-skill-1) if you've never created an Alexa skill before.  
 
 ### Pricing
 Please note that there is a nominal cost for deploying Alexa for Business as described [here](https://aws.amazon.com/alexaforbusiness/pricing/), as well as any other services that you implement on the backend to fulfill requests, such as AWS Lambda or other AWS Services.
