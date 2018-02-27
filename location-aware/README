@@ -1,4 +1,4 @@
-Here you'll find skill samples that are location aware using Alexa for Business' resolveRoom API, with the "shared device" deployment model.
+Here you'll find skill samples that are location aware using the resolveRoom API, available via the "shared device" deployment model of Alexa for Business.
 https://docs.aws.amazon.com/a4b/latest/ag/getting-started.html
 
 If a user grants permissions to disclose their device address, an Alexa skill can discover the location of the user's device which is useful for purposes of fulfilling their request.
