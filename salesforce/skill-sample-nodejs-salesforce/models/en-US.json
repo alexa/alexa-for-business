@@ -1,0 +1,78 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "salesforce demo",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.RepeatIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StartOverIntent",
+          "samples": [
+            "start over",
+            "redo",
+            "clear my settings"
+          ]
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "ChangeCode",
+          "samples": [
+            "I want to change my code",
+            "change my code",
+            "change my voice code",
+            "I want to change my voice code"
+          ],
+          "slots": []
+        },
+        {
+          "name": "CodeIntent",
+          "samples": [
+            "the pin is {VOICE_CODE}",
+            "my pin is {VOICE_CODE}",
+            "{VOICE_CODE}"
+          ],
+          "slots": [
+            {
+              "name": "VOICE_CODE",
+              "type": "AMAZON.FOUR_DIGIT_NUMBER",
+              "samples": []
+            }
+          ]
+        },
+        {
+          "name": "RecentLead",
+          "samples": [
+            "for my leads",
+            "lead",
+            "for a lead",
+            "for a recent lead"
+          ],
+          "slots": []
+        },
+        {
+          "name": "RecentOpportunity",
+          "samples": [
+            "for my opportunities",
+            "opportunity",
+            "for an opportunity",
+            "for a recent opportunity"
+          ],
+          "slots": []
+        }
+      ]
+    }
+  }
+}

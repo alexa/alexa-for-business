@@ -1,0 +1,16 @@
+{
+  "name": "alexa-salesforce-demo",
+  "version": "1.0.0",
+  "description": "A sample skill that connects Alexa and Salesforce",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Amazon.com, Inc.",
+  "license": "Amazon Software License",
+  "dependencies": {
+    "alexa-sdk": "^1.0.15",
+    "bcryptjs": "^2.4.3",
+    "nforce": "^1.7.0"
+  }
+}
