@@ -1,0 +1,40 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "summary": "Help Desk Chime/Slack sample skill using resolveRoom API from Alexa for Business",
+          "examplePhrases": [
+            "Alexa tell Help Desk the HDMI cable is broken",
+            "Alexa tell Help Desk the temperature in this room is too high",
+            "Alexa tell Help Desk the projector lamp is burned out"
+          ],
+          "name": "Help Desk",
+          "smallIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/638b/a326bb34dfe84c4783357dbeef67af06/APP_ICON?versionId=mHzaqjnBAkFtQ7bjgt2X9UO6APtwVkvc&AWSAccessKeyId=AKIAI3X6PUXD7CU5F5BQ&Expires=1518037332&Signature=vj0WQw1%2BY4pA2A3Sdd9I91rt74g%3D",
+          "description": "This is a sample skill showing a sample use of the resolveRoom API in Alexa for Business",
+          "largeIconUri": "https://s3.amazonaws.com/CAPS-SSE/echo_developer/a039/7e461c9e7e884301ae6a69f8e67fb058/APP_ICON_LARGE?versionId=URW1uKwx8SVp4MDJPlGP_WRY1f.kVa_e&AWSAccessKeyId=AKIAI3X6PUXD7CU5F5BQ&Expires=1518037332&Signature=aFOw2oxG5sZbUM9aTsVvrWDxG5c%3D"
+        }
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "n/a this is a private skill",
+      "category": "BUSINESS_AND_FINANCE",
+      "distributionMode": "PRIVATE",
+      "distributionCountries": []
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "sourceDir": "lambda/custom"
+        }
+      }
+    },
+    "manifestVersion": "1.0",
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "isExportCompliant": true,
+      "containsAds": false,
+      "isChildDirected": false,
+      "usesPersonalInfo": false
+    }
+  }
+}

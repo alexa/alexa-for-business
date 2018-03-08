@@ -1,0 +1,42 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "help desk",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent"
+        },
+        {
+          "name": "AMAZON.HelpIntent"
+        },
+        {
+          "name": "AMAZON.StopIntent"
+        },
+        {
+          "name": "sendIssue",
+          "slots": [
+            {
+              "name": "issue",
+              "type": "AMAZON.LITERAL"
+            }
+          ],
+          "samples": [
+            "{the hdmi cable in here is broken|issue}",
+            "{the temperature is too high|issue}",
+            "{the lamp in the projector is out|issue}",
+            "{i need help|issue}",
+            "{everytime i start the projector the lamp flickers a few times and then dies|issue}",
+            "{it's too cold in here|issue}",
+            "{i'm hungry|issue}",
+            "{the door is locked|issue}",
+            "{the door won't open|issue}",
+            "{i need more chairs in this room and also the whiteboard markers are all gone|issue}",
+            "{i'm thirsty|issue}",
+            "{i don't like the paint color in here|issue}",
+            "{we need monkeys|issue}"
+          ]
+        }
+      ]
+    }
+  }
+}
