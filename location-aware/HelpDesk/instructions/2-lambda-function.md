@@ -88,7 +88,7 @@ In the [first step of this guide](./1-voice-user-interface.md), we built the Voi
  
  Sample of the values set in a case using Teams:
 
- <img src="./img/EnvironmentVariables.jpg"/>
+ <img src="./img/EnvironmentVariables.JPG"/>
  
 <!--21. **Add the request module to the AWS Lambda function.** - Removed this section as it's not required.  The skill using https, which is a built in node module.
 Because we'll use the **request** module to perform our HTTPS POST from the Lambda to the Help Desk chat's webhook uri, we need to add the module to our Lambda function.  We'll do so by exporting the Lambda function's deployment package, adding the additional module in via "**npm install request**," then re-uploading the modified package.
