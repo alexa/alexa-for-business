@@ -75,17 +75,27 @@ In the [first step of this guide](./1-voice-user-interface.md), we built the Voi
 
  If your Help Desk skill will call Chime, create a chat room for your Help Desk and a webhook for that room, following these [Chime instructions](https://docs.aws.amazon.com/chime/latest/ug/webhooks.html).
  
- If you'll instead use Slack, create a webhook integration for your Help Desk channel using these [Slack instructions](https://api.slack.com/incoming-webhooks).
+ For Slack, create a webhook integration for your Help Desk channel using these [Slack instructions](https://api.slack.com/incoming-webhooks).
 
-20. **Edit your lambda function to function with Chime or Slack, and provide the webhook uri.**
- Using the webhook uri you created in **Step 19**, uncomment the two blocks in the Lambda code corresponding to Chime or Slack, depending on which one you will use, and edit the values in those code blocks that need to be replaced, such as the webhook path.  (You will uncomment two code blocks, whether using Chime or Slack.)
+ For Teams, create a webhook integration for your Help Desk channel using these [Microsoft Teams instructions](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/connectors#setting-up-a-custom-incoming-webhook).
+
+20. **Edit your lambda function to function with Chime, Slack, or Teams, and provide the webhook uri.**
+ In the Lambda console, create two environment variables named CHAT_PROVIDER and WEBHOOK_URI.
+ Set the CHAT_PROVIDER environment variable with the vendor you created a webhook for in **Step 19**  valid options are chime, slack, or teams.
  
-21. **Add the request module to the AWS Lambda function.**
+ Next, update the WEBHOOK_URI environment variable and add the URI path of the webhook you created in **Step 19**.
+ Examples: "/services/long-string" or "/webhook/long-string"
+ 
+ Sample of the values set in a case using Teams:
+
+ <img src="./img/EnvironmentVariables.jpg"/>
+ 
+<!--21. **Add the request module to the AWS Lambda function.** - Removed this section as it's not required.  The skill using https, which is a built in node module.
 Because we'll use the **request** module to perform our HTTPS POST from the Lambda to the Help Desk chat's webhook uri, we need to add the module to our Lambda function.  We'll do so by exporting the Lambda function's deployment package, adding the additional module in via "**npm install request**," then re-uploading the modified package.
 
  **Export your existing Lambda function** from the AWS console, by navigating to your Lambda function, then clicking on **Actions > Export function.** Click on **Download deployment package** to get the zip file.  Follow the [instructions for adding a node module to a Lambda package](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-create-deployment-pkg.html) and add the request module.  For our purposes, and because AWS Lambda already natively supports the AWS SDK, you'll only need 4 node modules: the alexa sdk, the 2 i18next modules, and the request module we're adding.  The other node_modules can be removed for our purposes to keep the Lambda size fairly lean when you re-upload it.  
  
- When ready with your new zipped deployment package, **upload your code** by navigating to the AWS console, and in the section for **Function code** for your Lambda, go to the dropdown box for **Code entry type** and select **Upload a .ZIP file.**  Select your modified Lambda package and upload it.
+ When ready with your new zipped deployment package, **upload your code** by navigating to the AWS console, and in the section for **Function code** for your Lambda, go to the dropdown box for **Code entry type** and select **Upload a .ZIP file.**  Select your modified Lambda package and upload it. -->
 
    <br/><br/>
    <a href="./3-connect-vui-to-code.md"><img src="https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/general/buttons/button_next_connect_vui_to_code._TTH_.png"/></a>

@@ -3,7 +3,7 @@
 
 [![Voice User Interface](https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/navigation/1-off._TTH_.png)](./instructions/1-voice-user-interface.md)[![Lambda Function](https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/navigation/2-off._TTH_.png)](./instructions/2-lambda-function.md)[![Connect VUI to Code](https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/navigation/3-off._TTH_.png)](./instructions/3-connect-vui-to-code.md)[![Testing](https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/navigation/4-off._TTH_.png)](./instructions/4-testing.md)[![Customization](https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/navigation/5-off._TTH_.png)](./instructions/5-customization.md)[![Publication](https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/navigation/6-off._TTH_.png)](./instructions/6-publication.md)
 
-This Alexa sample skill is a template for a basic Help Desk skill that will use the Alexa for Business resolveRoom API to post an issue from a user to Amazon Chime or Slack, using a simple web-hook https POST.  
+This Alexa sample skill is a template for a basic Help Desk skill that will use the Alexa for Business resolveRoom API to post an issue from a user to Amazon Chime, Slack, or Microsoft Teams using a simple web-hook https POST.  
 
 # Let's Get Started
 If this is your first time here, you're new to Alexa Skills Development, or you're looking for more detailed instructions, click the **Get Started** button below:
@@ -26,7 +26,7 @@ Be sure to take a look at the [Additional Resources](#additional-resources) at t
 ```text
 Alexa, tell Help Desk the projector lamp is broken
 >>> Okay, I've notified the Help Desk.  They're sending someone to <your room location>.  I've told them you said, "<uses your literal utterance>".
->>> (your Chime or Slack web-hook is called as well at this time)
+>>> (your Chime, Slack, or Teams web-hook is called at this time to post the message)
 ```
 
 ### Repository Contents
@@ -65,9 +65,8 @@ Alexa, tell Help Desk the projector lamp is broken
 	$ cd lambda/custom
 	$ npm install
 	```
-4. Uncomment 2 sections inside the Lambda index.js code in the `/lambda/custom` directory, depending on whether you'll be using Chime or Slack (there will be 2 sections to uncomment), and **replace the values for your chat channel and web-hook**.
 
-5. Edit .ask/config if you're using a different ASK profile, by replacing "default" with your profile name.
+4. Edit .ask/config if you're using a different ASK profile, by replacing "default" with your profile name.
 
 ### Deployment
 
@@ -80,7 +79,27 @@ ASK CLI will create the skill and the Lambda function for you. The Lambda functi
 	$ ask deploy -t all --profilename <your profile name>
 	```
  Note that this will deploy your Lambda function but not the IAM policy for the Lambda to use resolveRoom, so we'll need to add that in a later step.
+
+2. **Set up the chat and webhook that your Lambda function will call**
+
+ If your Help Desk skill will call Chime, create a chat room for your Help Desk and a webhook for that room, following these [Chime instructions](https://docs.aws.amazon.com/chime/latest/ug/webhooks.html).
  
+ For Slack, create a webhook integration for your Help Desk channel using these [Slack instructions](https://api.slack.com/incoming-webhooks).
+
+ For Teams, create a webhook integration for your Help Desk channel using these [Teams instructions](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/connectors#setting-up-a-custom-incoming-webhook).
+
+
+2. **Edit your lambda function configuration for Chime, Slack, or Teams, and provide the webhook uri.**
+ In the Lambda console, create two environment variables named CHAT_PROVIDER and WEBHOOK_URI.
+ Set the CHAT_PROVIDER environment variable with the vendor you created a webhook for in **Step 2**  valid options are chime, slack, or teams.
+ 
+ Next, update the WEBHOOK_URI environment variable and add the URI path of the webhook you created in **Step 2**.
+ Examples: "/services/long-string" or "/webhook/long-string"
+ 
+ Sample of the values set in a case using Teams:
+
+ <img src="./instructions/img/EnvironmentVariables.jpg"/>
+
 ### Submit your skill
 Now that the skill and Lambda function are deployed you'll want to submit the skill as a private skill.  (Note the skill.json is already set to PRIVATE distribution.)
 

@@ -3,7 +3,7 @@
 
 ## Share your private skill templates
 
-Congratulations!  You've successfully created and tested an Alexa for Business private skill that takes a room issue report and sends it to a chat channel in Chime or Slack, via a web-hook POST.
+Congratulations!  You've successfully created and tested an Alexa for Business private skill that takes a room issue report and sends it to a chat channel in Chime, Slack, or Teams via a web-hook POST.
 
 Now that you've published your private skill and made it available to your organization, you can further share your knowledge in a couple of different ways:
 

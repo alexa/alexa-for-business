@@ -17,7 +17,7 @@
 *  Adding a skill to a skill group
 *  Adding a skill group to a room
 *  AMAZON.Literal Slot usage
-*  Making a webhook POST call from AWS Lambda to Amazon Chime or Slack
+*  Making a webhook POST call from AWS Lambda to Amazon Chime, Slack, or Microsoft Teams
 
 ## What You Will Need
 *  [Amazon Developer Portal Account](http://developer.amazon.com)
@@ -27,7 +27,7 @@
 *  A Chime room or Slack channel with webhook integration
 
 ## What Your Skill Will Do
-This is a sample Help Desk skill where a user in a conference room can simply tell Alexa about an in-room issue, saying for example, 'Alexa, tell Help Desk the projector is broken,' and the issue is reported to to a Help Desk team via a webhook call to Chime or Slack.
+This is a sample Help Desk skill where a user in a conference room can simply tell Alexa about an in-room issue, saying for example, 'Alexa, tell Help Desk the projector is broken,' and the issue is reported to to a Help Desk team via a webhook call to Chime, Slack, or Teams.
 
 ## Location aware skills using resolveRoom API
 This Help Desk skill demonstrates the ability for a private skill deployed on a [shared device](https://docs.aws.amazon.com/a4b/latest/ag/getting-started.html) to use the resolveRoom API, to determine the location of the user.

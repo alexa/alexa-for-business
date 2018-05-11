@@ -1,36 +1,30 @@
+/*
+Information on configuring webhooks for:
+  Chime:  https://docs.aws.amazon.com/chime/latest/ug/webhooks.html
+  Slack: https://get.slack.help/hc/en-us/articles/115005265063-Incoming-WebHooks-for-Slack 
+  Teams:  https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/connectors#setting-up-a-custom-incoming-webhook 
+*/
+
+//import required modules
 const Alexa = require('alexa-sdk');
 const AWS = require('aws-sdk');
 const https = require('https'); // Node standard package for making https requests
 
-const a4b = new AWS.AlexaForBusiness();
+// Only the next two lines require updating as environment variables in Lambda.
+const chatProvider = process.env.CHAT_PROVIDER; // Options are "chime", "slack", or "teams".
+const webhookPath = process.env.WEBHOOK_URI; // examples: /services/<long string> or /webhook/<long string>
 
-const APP_ID = '';// REPLACE THIS VALUE WITH YOUR APP ID
+const APP_ID = '';// REPLACE THIS VALUE WITH YOUR Skill ID
 
+// various messages that can be updated for the skill
 const welcomeMessage = 'This is a skill to show you how to use the room resolving a.p.i. in Alexa for Business';
-
 const welcomeReprompt = "Sorry I didn't understand.  What kind of issues are you having?";
-
 const HelpMessage = ",Try telling me 'I need help with the projector'";
-
 const goodbyeMessage = 'OK, have a nice day.';
 
+const a4b = new AWS.AlexaForBusiness();
+
 let alexa;
-
-//  IF YOU USE CHIME, UNCOMMENT THE FOLLOWING SECTION AND REPLACE THE VALUE FOR "webhookPath"
-
-/*
-    const webhookHost = "hooks.chime.aws";
-    const webhookPath = "<REPLACE WITH YOUR WEBHOOK PATH>";//such as /incomingwebhooks/<long string>
-*/
-
-//  IF USING SLACK, UNCOMMENT FOLLOWING SECTION AND REPLACE VALUES FOR "webhookPath" and "sChannel"
-
-/*
-    const webhookHost = "hooks.slack.com";
-    const webhookPath = "<REPLACE WITH YOUR WEBHOOK PATH>";//such as /services/<long string>
-    const sChannel = "<REPLACE WITH #CHANNEL NAME>"// your channel name such as "#helpdesk"
-    const sIconEmoji = ":robot_face:";
-*/
 
 const sessionHandlers = {
   'LaunchRequest': function () {
@@ -87,38 +81,62 @@ function handleResolveRoom(err, data) {
     }
   } else {
     if (data && data.RoomName) {
-      const textToWebhook = `An issue was reported in ${data.RoomName}: "${reportedIssue}".`;// The message that will be posted to the webhook
+      const textToWebhook = `An issue was reported in ${data.RoomName}: ${reportedIssue}`;// The message that will be posted to the webhook
+
+      switch (chatProvider) {
+
+        // Amazon Chime specific information
+        case "chime":
+          var webhookHost = "hooks.chime.aws";
+          var body = (JSON.stringify({
+            Content: textToWebhook, // The message that will be posted to Chime
+          }));
+          var headerInfo = { 'Content-Type': 'application/json' };
+          break;
+
+        case "slack": // Slack specific information:
+          var webhookHost = "hooks.slack.com";
+          var body = (JSON.stringify({
+            username: 'AlexaWebHookBot',
+            text: textToWebhook, // The message that will be posted to Slack
+          }));
+          var headerInfo = { 'Content-Type': 'application/json' };
+          break;
+
+        case "teams": // Microsoft Teams specific information:
+          var webhookHost = "outlook.office.com";
+          var body = JSON.stringify({
+            text: textToWebhook, // The message that will be posted to Microsoft Teams
+          });
+          var headerInfo = {
+            'Content-Type': 'application/json',
+            'content-length': body.length
+          };
+          break;
+
+        default: // Amazon Chime specific information in case nothing is specified
+          var webhookHost = "hooks.chime.aws";
+          var body = (JSON.stringify({
+            Content: textToWebhook, // The message that will be posted to Amazon Chime
+          }));
+          var headerInfo = { 'Content-Type': 'application/json' };
+          break;
+      }
 
       const req = https.request({
         method: 'POST',
         hostname: webhookHost,
         path: webhookPath,
-        headers: { 'Content-Type': 'application/json' },
+        headers: headerInfo,
       }, res => {
-        output = `Okay!  I've notified the Help Desk.  They're sending someone to ${data.RoomName}.  I told them you said, "${reportedIssue}"`;
-      this.emit(':tell', output);
-    });
+        output = `Okay!  I've notified the Help Desk.  They're sending someone to ${data.RoomName}.  I told them you said, ${reportedIssue}`;
+        this.emit(':tell', output);
+      });
 
-      req.on('error', function (e) { console.error(`Error: ${e.message}`); });
-
-      // UNCOMMENT NEXT BLOCK IF USING CHIME
-      /*
-      req.write(JSON.stringify({
-        Content: textToWebhook, // The message that will be posted to Chime
-      }));
-      */
-
-      // UNCOMMENT NEXT BLOCK IF USING SLACK
-      /*
-      req.write(JSON.stringify({
-        channel: sChannel,
-        username: 'webhookbot',
-        text: textToWebhook,
-        IconEmoji: sIconEmoji, // The message that will be posted to Slack
-      }));
-      */
-
+      req.write(body);
       req.end();
+      req.on('error', function (e) { console.log(`Error: ${e.message}`); });
+
     } else {
       output += 'This device is not assigned to a room.';
       this.emit(':tell', output);
