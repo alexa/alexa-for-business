@@ -98,7 +98,7 @@ ASK CLI will create the skill and the Lambda function for you. The Lambda functi
  
  Sample of the values set in a case using Teams:
 
- <img src="./instructions/img/EnvironmentVariables.jpg"/>
+ <img src="./instructions/img/EnvironmentVariables.JPG"/>
 
 ### Submit your skill
 Now that the skill and Lambda function are deployed you'll want to submit the skill as a private skill.  (Note the skill.json is already set to PRIVATE distribution.)
