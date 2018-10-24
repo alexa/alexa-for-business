@@ -1,0 +1,30 @@
+doctype html
+html(lang='en')
+  - var title = "Sample AVS Device Maker Console"
+  head
+    title= title
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css')
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js')
+    script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    .navbar.navbar-default(role='navigation')
+          .container-fluid
+            .navbar-header
+              button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+                span.sr-only Toggle navigation
+                span.icon-bar
+                span.icon-bar
+                span.icon-bar
+              a.navbar-brand(href='#') #{title}
+            .navbar-collapse.collapse
+              ul.nav.navbar-nav
+                li
+                  a(href='/devices') Devices
+              a(href='/device/create' class='pull-right btn btn-primary btn-md navbar-btn' role='button') Setup New Device
+    div(class='container-fluid')
+      div(class='row')
+        div(class='col-sm-12')
+          block content

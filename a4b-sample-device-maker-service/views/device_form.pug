@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  h1(align='center') #{title}
+
+  form(method='POST' action='')
+    div.form-group
+      label(for='dsn') Device Serial Number:
+      input#dsn.form-control(type='text' placeholder='DeviceSerialNumber' name='dsn' required='true' value=(undefined===device ? '' : device.dsn))
+    div.form-group
+      label(for="productId") Product ID:
+      select.form-control(name='productId')
+        each product, i in products
+          option(value=product selected= i==0) #{product}
+    button.btn.btn-primary(type='submit') Submit
+
+  if errors 
+    ul
+      for error in errors
+        li!= error.msg

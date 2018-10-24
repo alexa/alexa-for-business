@@ -1,0 +1,15 @@
+{
+  "devices": [
+    {
+      "dsn": "002ProdAVSDeviceDemo",
+      "clientId": "amzn1.application-oa2-client.dd8bdb308769406dab59e8f23f525288",
+      "amazonId": "A2DVC292SX6TG0",
+      "productId": "A4B_AVS_CRS_PROD",
+      "isEnabledForA4B": true
+    }
+  ],
+  "awsCredentials": {
+    "externalId": "AVSExternalIdQm3nFNMfepji",
+    "arn": "arn:aws:iam::524095038153:role/AVS_OEM_Role_723847145664_A2DVC292SX6TG0"
+  }
+}

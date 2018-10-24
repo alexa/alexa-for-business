@@ -1,0 +1,62 @@
+extends layout
+
+block content
+	h1(align='center') Devices
+	if devices.length > 0
+		table.table.table-bordered
+			tr
+				th Device Serial Number
+				th Product ID
+				th Amazon ID
+				th Client ID
+				th Is Enabled for A4B?
+				th Actions
+			each device in devices
+				tr
+					td #{device.dsn}
+					td #{device.productId}
+					td #{device.amazonId}
+					td #{device.clientId}
+					td #{device.isEnabledForA4B ? "Yes" : "No"}
+					td
+						if !device.isEnabledForA4B
+							form#btn-linkToA4B(method='POST' action='/device/enableA4B')
+								input.form-control(type='hidden', name='dsn', required='true', value=device.dsn )
+								button.btn-linkToA4B.btn.btn-primary.btn-sm.m-0(type='submit') Enable A4B
+						else
+							form#btn-linkToA4B(method='POST' action='/device/disableA4B')
+								input.form-control(type='hidden', name='dsn', required='true', value=device.dsn )
+								button.btn-linkToA4B.btn.btn-primary.btn-sm.m-0(type='submit') Disable A4B
+						form#btn-delete(method='POST' action='/device/delete')
+							input.form-control(type='hidden', name='dsn', required='true', value=device.dsn )
+							button.btn.btn-primary.btn-sm.m-0(type='submit') Delete
+	else
+		div(class="alert alert-info")
+			//a(href='/device/create' class='pull-right btn btn-primary btn-xs' role='button') Setup New Device
+			p #[strong Info:] You have not setup any devices yet.
+
+	h1(align='center') IAM Information
+	div(class="alert alert-info")
+		if iam.externalId && iam.arn
+			button(type='button' class='btn btn-xs btn-primary pull-right' data-toggle='modal' data-target='#linkToAWSModal') Update
+			p #[strong IAM Role ARN:] #{iam.arn}
+			p #[strong IAM External ID:] #{iam.externalId}
+		else
+			button(type='button' class='btn btn-xs btn-primary pull-right' data-toggle='modal' data-target='#linkToAWSModal') Add
+			p #[strong Info:] You have not added your AWS IAM information yet.
+
+	#linkToAWSModal(class="modal fade")
+		div(class="modal-dialog")
+			div(class="modal-content")
+				div(class="modal-header")
+					button(type="button" class="close" data-dismiss="modal" aria-hidden="true") &times;
+					h4(class="modal-title") Link your Device to AWS
+				div(class="modal-body")
+					form(method='POST' action='/iam/create')
+						div.form-group
+							label(for='role_arn') Role ARN:
+							input#dsn.form-control(type='text' placeholder='Role ARN' name='role_arn' required='true' value='')
+						div.form-group
+							label(for='external_id') External ID:
+							input#dsn.form-control(type='text' placeholder='External ID' name='external_id' required='true' value='')
+						button.btn.btn-primary(type='submit') Submit
