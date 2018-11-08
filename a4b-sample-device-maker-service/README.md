@@ -55,7 +55,7 @@ To build and run these examples, you'll need to:
   - Store AWS credentials of IAM user created in above step in a shared credentials file.
     For more information about how to set up a shared credentials file, see
     [Loading Credentials in Node.js from the Shared Credentials
-    File](http://integ-docs-aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html)
+    File](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html)
     in the *AWS SDK for JavaScript Developer Guide*.
   - Use AVS device SDK v1.10.0 or above and implement the revoke authorization directive as a requirement.
 
