@@ -1,4 +1,4 @@
-  {
+{
     "cblAuthDelegate":{
         // Path to CBLAuthDelegate's database file. e.g. /home/ubuntu/Build/cblAuthDelegate.db
         // Note: The directory specified must be valid.
@@ -12,24 +12,24 @@
         // The Client ID of the Product from developer.amazon.com
         "clientId":"${SDK_CONFIG_CLIENT_ID}",
         // Product ID from developer.amazon.com
-        "productId":"${SDK_CONFIG_PRODUCT_ID}"
+        "productId":"${SDK_CONFIG_PRODUCT_ID}",
+        // The name of the device manufacturer.
+        "manufacturerName": "${SDK_CONFIG_MANUFACTURER_NAME}",
+        // The description of the device which should contain the manufacturer name or how the device is connected.
+        "description": "${SDK_CONFIG_DEVICE_DESCRIPTION}"
+    },
+    "avsGatewayManager": {
+        // Allows configuring the AVS Gateway the device should connect to.
+        // Important Note: The AVSGatewayManager stores a previously verified gateway in the MiscDB and uses it
+        // to establish a connection with AVS. In order to override the gateway configured here, you may have to
+        // delete the AVSGatewayManager table under the MiscDB.
+        // "avsGateway":"https://alexa.na.gateway.devices.a2z.com"
     },
     "capabilitiesDelegate":{
-        // The endpoint to connect in order to send device capabilities.
-        // This will only be used in DEBUG builds.
-        // e.g. "endpoint": "https://api.amazonalexa.com"
-        // Override the message to be sent out to the Capabilities API.
-        // This will only be used in DEBUG builds.
-        // e.g. "overridenCapabilitiesPublishMessageBody": {
-        //          "envelopeVersion":"20160207",
-        //          "capabilities":[
-        //              {
-        //                "type":"AlexaInterface",
-        //                "interface":"Alerts",
-        //                "version":"1.1"
-        //              }
-        //          ]
-        //      }
+        // Path to misc database file. e.g. /home/ubuntu/Build/capabilitiesDelegate.db
+        // Note: The directory specified must be valid.
+        // The database file (capabilitiesDelegate.db) will be created by SampleApp, do not create it yourself.
+        "databaseFilePath":"${SDK_CAPABILITIES_DELEGATE_DATABASE_FILE_PATH}"
     },
     "miscDatabase":{
         // Path to misc database file. e.g. /home/ubuntu/Build/miscDatabase.db
@@ -44,17 +44,25 @@
         // The database file should only be used for alerts (don't use it for other components of SDK)
         "databaseFilePath":"${SDK_SQLITE_DATABASE_FILE_PATH}"
     },
-    "settings":{
-        // Path to Settings database file. e.g. /home/ubuntu/Build/settings.db
+    "deviceSettings":{
+        // Path to Device Settings database file. e.g. /home/ubuntu/Build/deviceSettings.db
         // Note: The directory specified must be valid.
-        // The database file (settings.db) will be created by SampleApp, do not create it yourself.
-        // The database file should only be used for settings (don't use it for other components of SDK)
-        "databaseFilePath":"${SDK_SQLITE_SETTINGS_DATABASE_FILE_PATH}",
-        "defaultAVSClientSettings":{
-            // Default language for Alexa.
-            // See https://developer.amazon.com/docs/alexa-voice-service/settings.html#settingsupdated for valid values.
-            "locale":"${SETTING_LOCALE_VALUE}"
-        }
+        // The database file (deviceSettings.db) will be created by SampleApp, do not create it yourself.
+        // The database file should only be used for device settings (don't use it for other components of SDK)
+        "databaseFilePath":"${SDK_SQLITE_DEVICE_SETTINGS_DATABASE_FILE_PATH}",
+        // The list of supported locales on this device.
+        "locales":["en-US","en-GB","de-DE","en-IN","en-CA","ja-JP","en-AU","fr-FR","it-IT","es-ES","es-MX","fr-CA",
+            "es-US", "hi-IN", "pt-BR"],
+        // The default locale of this device.
+        "defaultLocale":"en-US",
+        // The list of locale combinations supported on this device.
+        "localeCombinations":[
+            ["en-CA", "fr-CA"],
+            ["fr-CA", "en-CA"]
+        ],
+        // The default timezone of this device.  This is an optional parameter; if it isn't specified, Etc/GMT is set as
+        // the default timezone.
+        "defaultTimezone":"America/Vancouver"
     },
     "bluetooth" : {
         // Path to Bluetooth database file. e.g. /home/ubuntu/Build/bluetooth.db
@@ -77,19 +85,15 @@
         // The database file should only be used for notifications (don't use it for other components of SDK)
         "databaseFilePath":"${SDK_NOTIFICATIONS_DATABASE_FILE_PATH}"
     },
-    "sampleApp":{
+    "sampleApp": {
         // To specify if the SampleApp supports display cards.
-        "displayCardsSupported":true,
-        // To register device with Alexa for Business
-        "registerWithA4B":true,
-        // device maker service endpoint
-        "deviceMakerServiceEndpoint":"http://localhost:3000/device/register"
+        "displayCardsSupported":true
         // The firmware version of the device to send in SoftwareInfo event.
         // Note: The firmware version should be a positive 32-bit integer in the range [1-2147483647].
         // e.g. "firmwareVersion": 123
         // The default endpoint to connect to.
         // See https://developer.amazon.com/docs/alexa-voice-service/api-overview.html#endpoints for regions and values
-        // e.g. "endpoint": "https://avs-alexa-na.amazon.com"
+        // e.g. "endpoint": "https://alexa.na.gateway.devices.a2z.com"
 
         // Example of specifying suggested latency in seconds when openning PortAudio stream. By default,
         // when this paramater isn't specified, SampleApp calls Pa_OpenDefaultStream to use the default value.
@@ -98,6 +102,14 @@
         //"portAudio":{
         //    "suggestedLatency": 0.150
         //}
+
+        // To specify the number of MediaPlayer instances for AudioPlayer to use,
+        // a value of '1' will result in limited pre-buffering:  It will buffer during introductory TTS, but not
+        // the next track.
+        // A value of '2' will allow next track buffering as well.  If multiple Play directives are expected to be enqueued,
+        // at the same time, and the memory is available, a value of 3 or more will allow additional buffering.
+        // The default is '2'.
+        // "audioMediaPlayerPoolSize": 1
     }
 
     // Example of specifying output format and the audioSink for the gstreamer-based MediaPlayer bundled with the SDK.
@@ -147,12 +159,94 @@
 
     // // Example for specifiying the Template Runtime display card timeout values.
     // "templateRuntimeCapabilityAgent": {
-    //     // If present, shall overide the default timeout for clearing the RenderTemplate display card when SpeechSynthesizer is in FINISHED state.
+    //     // If present, shall override the default timeout for clearing the RenderTemplate display card when SpeechSynthesizer is in FINISHED state.
     //     "displayCardTTSFinishedTimeout": 2000,
-    //     // If present, shall overide the default timeout in ms for clearing the RenderPlayerInfo display card when AudioPlayer is in FINISHED state.
+    //     // If present, shall override the default timeout in ms for clearing the RenderPlayerInfo display card when AudioPlayer is in FINISHED state.
     //     "displayCardAudioPlaybackFinishedTimeout": 2000,
-    //     // If present, shall overide the default timeout in ms for clearing the RenderPlayerInfo display card when AudioPlayer is in STOPPED or PAUSED state.
+    //     // If present, shall override the default timeout in ms for clearing the RenderPlayerInfo display card when AudioPlayer is in STOPPED or PAUSED state.
     //     "displayCardAudioPlaybackStoppedPausedTimeout": 60000
     // }
 
+    // // The equalizer function allows you to adjust equalizer settings, such as decibel (dB) levels and modes.
+    // // By default, the equalizer is enabled. The default settings are:
+    // // * `"enabled":true`. By default, the equalizer is active.
+    // // * All `"bands"` are active: `BASS`, `MIDRANGE`, `TREBLE`.
+    // // * "modes" are disabled. See below for more information.
+    // // * Minimum band level (`"minLevel"`): -6 dB
+    // // * Maximum band level (`"maxLevel"`): +6 dB
+    // // * Default state (defaultState): All "bands" are set to 0dB, and no "mode" is active.
+
+    // "equalizer": {
+    //     // Enables or disables the equalizer. Setting this value to `false` will disable the equalizer locally, and report to AVS that it is disabled.
+    //     "enabled": true,
+    //     // The equalizer bands supported by the device. Currently, there are only three available options: `BASS`, `MIDRANGE` and `TREBLE`.
+    //     // By default, all bands are enabled. However, if you specify a band or bands, then only those will be supported.
+    //     // bands will be supported.
+    //     "bands": {
+    //         "BASS": true,
+    //         "MIDRANGE": true,
+    //         "TREBLE": true
+    //     },
+    //     // The equalizer modes supported by the device. AVS doesn't define specific behavior for modes,
+    //     // the `EqualizerModeControllerInterface` defines this behavior. AVS provides the following options for modes: "MOVIE", "MUSIC", "NIGHT",
+    //     // "SPORT", "TV". By default, all modes are disabled (`false`), unless specifically marked as enabled (`true`).
+    //     "modes": {
+    //         "NIGHT": false,
+    //         "MOVIE": false,
+    //         "MUSIC": false,
+    //         "SPORT": false,
+    //         "TV": false
+    //     },
+    //     // The equalizer factory settings. These default values are used for a newly registered device, or when a user requests that Alexa reset a band.
+    //     "defaultState": {
+    //         // The default mode to be applied. When no default mode is desired, set the `"mode"` value to `"NONE"`, which is a custom value.
+    //         "mode": "NONE",
+    //         // Defines band level defaults (integer dB)
+    //         "bands": {
+    //             "BASS": 0,
+    //             "MIDRANGE": 0,
+    //             "TREBLE": 0
+    //         }
+    //     },
+    //     // Minimum value an equalizer band could have (integer dB).
+    //     "minLevel": -6,
+    //     // Maximum value an equalizer band could have (integer dB).
+    //     "maxLevel": 6,
+    //     // Default delta value to adjust the equalizer band (integer dB).
+    //     "defaultDelta": 1
+    // }
+
+    // Example of setting the minUnmuteVolume level in SpeakerManager
+    // "speakerManagerCapabilityAgent": {
+    //     // If present, shall override the default minUnmuteVolume value that the device restores to when unmuting
+    //     // at volume level 0.
+    //     // "minUnmuteVolume": 10
+    // }
+
  }
+
+
+// Notes for logging
+// The log levels are supported to debug when SampleApp is not working as expected.
+// There are 14 levels of logging with DEBUG9 providing the highest level of logging and CRITICAL providing
+// the lowest level of logging i.e. if DEBUG9 is specified while running the SampleApp, all the logs at DEBUG9 and
+// below are displayed, whereas if CRITICAL is specified, only logs of CRITICAL are displayed.
+// The 14 levels are:
+// DEBUG9, DEBUG8, DEBUG7, DEBUG6, DEBUG5, DEBUG4, DEBUG3, DEBUG2, DEBUG1, DEBUG0, INFO, WARN, ERROR, CRITICAL.
+
+// To selectively see the logging for a particular module, you can specify logging level in this json file.
+// Some examples are:
+// To only see logs of level INFO and below for ACL and MediaPlayer modules,
+// -  grep for ACSDK_LOG_MODULE in source folder. Find the log module for ACL and MediaPlayer.
+// -  Put the following in json:
+
+// "acl":{
+//  "logLevel":"INFO"
+// },
+// "mediaPlayer":{
+//  "logLevel":"INFO"
+// }
+
+// To enable DEBUG, build with cmake option -DCMAKE_BUILD_TYPE=DEBUG. By default it is built with RELEASE build.
+// And run the SampleApp similar to the following command.
+// e.g. ./SampleApp /home/ubuntu/.../AlexaClientSDKConfig.json /home/ubuntu/KittAiModels/ DEBUG9"
