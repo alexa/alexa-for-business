@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -19,17 +19,34 @@
 #include "SampleApp/UIManager.h"
 
 #include <AVSCommon/SDKInterfaces/DialogUXStateObserverInterface.h>
-#include "AVSCommon/Utils/SDKVersion.h"
+#include <AVSCommon/Utils/Logger/Logger.h>
+#include <AVSCommon/Utils/JSON/JSONUtils.h>
+#include <AVSCommon/Utils/SDKVersion.h>
+#include <Settings/SettingStringConversion.h>
+#include <Settings/SpeechConfirmationSettingType.h>
+#include <Settings/WakeWordConfirmationSettingType.h>
 
 #include <AVSCommon/Utils/LibcurlUtils/HttpPost.h>
 #include <AVSCommon/Utils/LibcurlUtils/HttpResponseCodes.h>
-
 #include "SampleApp/ConsolePrinter.h"
+#include "Settings/SettingStringConversion.h"
+
+/// String to identify log entries originating from this file.
+static const std::string TAG("UIManager");
+
+/**
+ * Create a LogEntry using this file's TAG and the specified event string.
+ *
+ * @param The event string for this @c LogEntry.
+ */
+#define LX(event) alexaClientSDK::avsCommon::utils::logger::LogEntry(TAG, event)
 
 namespace alexaClientSDK {
 namespace sampleApp {
 
 using namespace avsCommon::sdkInterfaces;
+using namespace avsCommon::utils;
+using namespace settings;
 
 static const std::string VERSION = avsCommon::utils::sdkVersion::getCurrentVersion();
 
@@ -70,8 +87,6 @@ static const std::string HELP_MESSAGE =
 #ifdef KWD
     "| Privacy mode (microphone off):                                             |\n"
     "|       Press 'm' and Enter to turn on and off the microphone.               |\n"
-    "| Echo Spatial Perception (ESP): This is for testing purpose only!           |\n"
-    "|       Press 'e' followed by Enter at any time to adjust ESP settings.      |\n"
 #endif
     "| Playback Controls:                                                         |\n"
     "|       Press '1' for a 'PLAY' button press.                                 |\n"
@@ -80,12 +95,25 @@ static const std::string HELP_MESSAGE =
     "|       Press '4' for a 'PREVIOUS' button press.                             |\n"
 #ifdef ENABLE_COMMS
     "| Comms Controls:                                                            |\n"
-    "|       Press 'd' followed by Enter at any time to accept or stop calls.     |\n"
+    "|       Press 'd' followed by Enter at any time to control the call.         |\n"
 #endif
     "| Settings:                                                                  |\n"
     "|       Press 'c' followed by Enter at any time to see the settings screen.  |\n"
     "| Speaker Control:                                                           |\n"
     "|       Press 'p' followed by Enter at any time to adjust speaker settings.  |\n"
+#ifdef ENABLE_PCC
+    "| Phone Control:                                                             |\n"
+    "|       Press 'a' followed by Enter at any time to control the phone.        |\n"
+#endif
+#ifdef ENABLE_MCC
+    "| Meeting Control:                                                           |\n"
+    "|       Press 'j' followed by Enter at any time to control the meeting.      |\n"
+#endif
+#ifdef ENABLE_ENDPOINT_CONTROLLERS_MENU
+    "| Endpoint Controller:                                                       |\n"
+    "|       Press 'e' followed by Enter at any time to see the endpoint          |\n"
+    "|       controller screen.                                                   |\n"
+#endif
     "| Firmware Version:                                                          |\n"
     "|       Press 'f' followed by Enter at any time to report a different        |\n"
     "|       firmware version.                                                    |\n"
@@ -146,24 +174,80 @@ static const std::string LIMITED_HELP_MESSAGE =
 static const std::string SETTINGS_MESSAGE =
     "+----------------------------------------------------------------------------+\n"
     "|                          Setting Options:                                  |\n"
-    "| Change Language:                                                           |\n"
-    "|       Press '1' followed by Enter to see language options.                 |\n"
+    "|  Press '1' followed by Enter to see language options.                      |\n"
+    "|  Press '2' followed by Enter to see Do Not Disturb options.                |\n"
+    "|  Press '3' followed by Enter to see wake word confirmation options.        |\n"
+    "|  Press '4' followed by Enter to see speech confirmation options.           |\n"
+    "|  Press '5' followed by Enter to see time zone options.                     |\n"
+    "|  Press '6' followed by Enter to see the Alarm Volume Ramp options.         |\n"
+    "|  Press 'q' followed by Enter to exit Settings Options.                     |\n"
     "+----------------------------------------------------------------------------+\n";
 
-static const std::string LOCALE_MESSAGE =
+#ifdef ENABLE_ENDPOINT_CONTROLLERS_MENU
+static const std::string ENDPOINT_CONTROLLER_MESSAGE =
     "+----------------------------------------------------------------------------+\n"
-    "|                          Language Options:                                 |\n"
+    "|                          Endpoint Controller Options:                               |\n"
+#ifdef POWER_CONTROLLER
+    "|  Press '1' followed by Enter to see Power Controller Options.              |\n"
+#endif
+#ifdef TOGGLE_CONTROLLER
+    "|  Press '2' followed by Enter to see Toggle Controller Options.             |\n"
+#endif
+#ifdef MODE_CONTROLLER
+    "|  Press '3' followed by Enter to see Mode Controller Options.               |\n"
+#endif
+#ifdef RANGE_CONTROLLER
+    "|  Press '4' followed by Enter to see Range Controller Options.              |\n"
+#endif
+    "|  Press 'q' followed by Enter to exit Endpoint Controller Options.          |\n"
+    "+----------------------------------------------------------------------------+\n";
+#ifdef POWER_CONTROLLER
+static const std::string POWER_CONTROLLER_OPTIONS =
+    "+----------------------------------------------------------------------------+\n"
+    "|                        Power Controller Options :                          |\n"
     "|                                                                            |\n"
-    "| Press '1' followed by Enter to change the language to US English.          |\n"
-    "| Press '2' followed by Enter to change the language to UK English.          |\n"
-    "| Press '3' followed by Enter to change the language to German.              |\n"
-    "| Press '4' followed by Enter to change the language to Indian English.      |\n"
-    "| Press '5' followed by Enter to change the language to Canadian English.    |\n"
-    "| Press '6' followed by Enter to change the language to Japanese.            |\n"
-    "| Press '7' followed by Enter to change the language to Australian English.  |\n"
-    "| Press '8' followed by Enter to change the language to French.              |\n"
-    "| Press '9' followed by Enter to change the language to Italian.             |\n"
-    "| Press 'a' followed by Enter to change the language to Spanish.             |\n"
+    "| Press '1' followed by Enter to set power state to ON.                      |\n"
+    "| Press '2' followed by Enter to set power state to OFF.                     |\n"
+    "| Press 'q' to exit Power Controller Options.                                |\n"
+    "+----------------------------------------------------------------------------+\n";
+#endif
+#ifdef TOGGLE_CONTROLLER
+static const std::string TOGGLE_CONTROLLER_OPTIONS =
+    "+----------------------------------------------------------------------------+\n"
+    "|                        Toggle Controller Options :                         |\n"
+    "|                                                                            |\n"
+    "| Press '1' followed by Enter to set toggle state to ON.                     |\n"
+    "| Press '2' followed by Enter to set toggle state to OFF.                    |\n"
+    "| Press 'q' to exit Toggle Controller Options.                               |\n"
+    "+----------------------------------------------------------------------------+\n";
+#endif
+#ifdef MODE_CONTROLLER
+static const std::string MODE_CONTROLLER_OPTIONS =
+    "+----------------------------------------------------------------------------+\n"
+    "|                        Mode Controller Options :                           |\n"
+    "|                                                                            |\n"
+    "| Press '1' followed by Enter to set mode to \"Red\".                          |\n"
+    "| Press '2' followed by Enter to set mode to \"Green\".                        |\n"
+    "| Press '3' followed by Enter to set mode to \"Blue\".                         |\n"
+    "| Press 'q' to exit Mode Controller Options.                                 |\n"
+    "+----------------------------------------------------------------------------+\n";
+#endif
+#ifdef RANGE_CONTROLLER
+static const std::string RANGE_CONTROLLER_OPTIONS =
+    "+----------------------------------------------------------------------------+\n"
+    "|                        Range Controller Options :                          |\n"
+    "|                                                                            |\n"
+    "| Enter Range between 1 to 10 followed by Enter.                             |\n"
+    "+----------------------------------------------------------------------------+\n";
+#endif
+#endif
+
+static const std::string LOCALE_MESSAGE_HEADER =
+    "+----------------------------------------------------------------------------+\n"
+    "|                          Language Options:                                  \n"
+    "|\n";
+
+static const std::string LOCALE_MESSAGE_FOOTER =
     "+----------------------------------------------------------------------------+\n";
 
 static const std::string SPEAKER_CONTROL_MESSAGE =
@@ -197,17 +281,75 @@ static const std::string VOLUME_CONTROL_MESSAGE =
     "| Press 'q' to exit Volume Control Mode.                                     |\n"
     "+----------------------------------------------------------------------------+\n";
 
-static const std::string ESP_CONTROL_MESSAGE =
+#ifdef ENABLE_PCC
+static const std::string PHONE_CONTROL_MESSAGE =
     "+----------------------------------------------------------------------------+\n"
-    "|                          ESP Options:                                      |\n"
+    "|                   Phone Control Options:                                   |\n"
     "|                                                                            |\n"
-    "| By Default ESP support is off and the implementation in the SampleApp is   |\n"
-    "| for testing purpose only!                                                  |\n"
+    "| Press '1' followed by Enter to send CallActivated event                    |\n"
+    "| Press '2' followed by Enter to send CallTerminated event                   |\n"
+    "| Press '3' followed by Enter to send CallFailed event                       |\n"
+    "| Press '4' followed by Enter to send CallReceived event                     |\n"
+    "| Press '5' followed by Enter to send CallerIdReceived event                 |\n"
+    "| Press '6' followed by Enter to send InboundRingingStarted event            |\n"
+    "| Press '7' followed by Enter to send DialStarted event                      |\n"
+    "| Press '8' followed by Enter to send OutboundRingingStarted event           |\n"
+    "| Press '9' followed by Enter to send SendDtmfSucceeded event                |\n"
+    "| Press '0' followed by Enter to send SendDtmfFailed event                   |\n"
+    "| Press 'i' to display this help screen.                                     |\n"
+    "| Press 'q' to exit Phone Control Mode.                                      |\n"
+    "+----------------------------------------------------------------------------+\n";
+
+static const std::string ENTER_CALL_ID_MESSAGE =
+    "+----------------------------------------------------------------------------+\n"
+    "|                              Call ID:                                      |\n"
     "|                                                                            |\n"
-    "| Press '1' followed by Enter to toggle ESP support.                         |\n"
-    "| Press '2' followed by Enter to enter the voice energy.                     |\n"
-    "| Press '3' followed by Enter to enter the ambient energy.                   |\n"
-    "| Press 'q' to exit ESP Control Mode.                                        |\n";
+    "| Enter call ID followed by Enter                                            |\n"
+    "|                                                                            |\n"
+    "+----------------------------------------------------------------------------+\n";
+
+static const std::string ENTER_CALLER_ID_MESSAGE =
+    "+----------------------------------------------------------------------------+\n"
+    "|                              Caller ID:                                    |\n"
+    "|                                                                            |\n"
+    "| Enter caller ID followed by Enter                                          |\n"
+    "|                                                                            |\n"
+    "+----------------------------------------------------------------------------+\n";
+#endif
+
+#ifdef ENABLE_MCC
+static const std::string MEETING_CONTROL_MESSAGE =
+    "+----------------------------------------------------------------------------+\n"
+    "|                   Meeting Control Options:                                 |\n"
+    "|                                                                            |\n"
+    "| Press '1' followed by Enter to send MeetingJoined event                    |\n"
+    "| Press '2' followed by Enter to send MeetingEnded event                     |\n"
+    "| Press '3' followed by Enter to send CalendarItems event                    |\n"
+    "| Press '4' followed by Enter to send SetCurrentMeetingSession event         |\n"
+    "| Press '5' followed by Enter to send ClearCurrentMeetingSession event       |\n"
+    "| Press '6' followed by Enter to send ConferenceConfigurationChanged event   |\n"
+    "| Press '7' followed by Enter to send MeetingClientErrorOccured event        |\n"
+    "| Press '8' followed by Enter to send CalendarClientErrorOccured event       |\n"
+    "| Press 'i' to display this help screen.                                     |\n"
+    "| Press 'q' to exit Meeting Control Mode.                                    |\n"
+    "+----------------------------------------------------------------------------+\n";
+
+static const std::string ENTER_SESSION_ID_MESSAGE =
+    "+----------------------------------------------------------------------------+\n"
+    "|                              Session ID:                                   |\n"
+    "|                                                                            |\n"
+    "| Enter session ID followed by Enter                                         |\n"
+    "|                                                                            |\n"
+    "+----------------------------------------------------------------------------+\n";
+
+static const std::string ENTER_CALENDAR_ITEMS_FILE_PATH_MESSAGE =
+    "+----------------------------------------------------------------------------+\n"
+    "|                              Calendar Items:                               |\n"
+    "|                                                                            |\n"
+    "| Enter path of calendar items json file followed by Enter                   |\n"
+    "|                                                                            |\n"
+    "+----------------------------------------------------------------------------+\n";
+#endif
 
 static const std::string RESET_CONFIRMATION =
     "+----------------------------------------------------------------------------+\n"
@@ -231,28 +373,68 @@ static const std::string REAUTHORIZE_CONFIRMATION =
     "| Press 'N' followed by Enter to cancel re-authorization.                    |\n"
     "+----------------------------------------------------------------------------+\n";
 
+static const std::string ALARM_VOLUME_RAMP_HEADER =
+    "+----------------------------------------------------------------------------+\n"
+    "|                 Alarm Volume Ramp Configuration:                           |";
+
+static const std::string SPEECH_CONFIRMATION_HEADER =
+    "+----------------------------------------------------------------------------+\n"
+    "|                 Speech Confirmation Configuration:                         |";
+
+static const std::string WAKEWORD_CONFIRMATION_HEADER =
+    "+----------------------------------------------------------------------------+\n"
+    "|                 Wake Word Confirmation Configuration:                      |";
+
+static const std::string DONOTDISTURB_CONFIRMATION_HEADER =
+    "+----------------------------------------------------------------------------+\n"
+    "|                 Do Not Disturb Mode Configuration:                         |";
+
+static const std::string ENABLE_SETTING_MENU =
+    "|                                                                            |\n"
+    "| Press 'E' followed by Enter to enable this configuration.                  |\n"
+    "| Press 'D' followed by Enter to disable this configuration.                 |\n"
+    "| Press 'q' followed by Enter to quit this configuration menu.               |\n"
+    "+----------------------------------------------------------------------------+\n";
+
+static const std::string TIMEZONE_SETTING_MENU =
+    "+----------------------------------------------------------------------------+\n"
+    "|                          TimeZone Configuration:                           |\n"
+    "|                                                                            |\n"
+    "| Press '1' followed by Enter to set the time zone to America/Vancouver.     |\n"
+    "| Press '2' followed by Enter to set the time zone to America/Edmonton.      |\n"
+    "| Press '3' followed by Enter to set the time zone to America/Winnipeg.      |\n"
+    "| Press '4' followed by Enter to set the time zone to America/Toronto.       |\n"
+    "| Press '5' followed by Enter to set the time zone to America/Halifax.       |\n"
+    "| Press '6' followed by Enter to set the time zone to America/St_Johns.      |\n"
+    "| Press 'q' followed by Enter to quit this configuration menu.               |\n"
+    "+----------------------------------------------------------------------------+\n";
+
 static const std::string RESET_WARNING =
     "Device was reset! Please don't forget to deregister it. For more details "
     "visit https://www.amazon.com/gp/help/customer/display.html?nodeId=201357520";
 
 static const std::string ENTER_LIMITED = "Entering limited interaction mode.";
 
-UIManager::UIManager() :
-        m_dialogState{DialogUXState::IDLE},
-        m_capabilitiesState{CapabilitiesObserverInterface::State::UNINITIALIZED},
-        m_capabilitiesError{CapabilitiesObserverInterface::Error::UNINITIALIZED},
-        m_authState{AuthObserverInterface::State::UNINITIALIZED},
-        m_authCheckCounter{0},
-        m_connectionStatus{avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::DISCONNECTED} {
-}
+/// The name of the alarm volume ramp setting.
+static const std::string ALARM_VOLUME_RAMP_NAME = "AlarmVolumeRamp";
 
-static const std::string COMMS_MESSAGE =
-    "+----------------------------------------------------------------------------+\n"
-    "|                          Comms Options:                                    |\n"
-    "|                                                                            |\n"
-    "| Press 'a' followed by Enter to accept an incoming call.                    |\n"
-    "| Press 's' followed by Enter to stop an ongoing call.                       |\n"
-    "+----------------------------------------------------------------------------+\n";
+/// The name of the speech confirmation setting.
+static const std::string SPEECH_CONFIRMATION_NAME = "SpeechConfirmation";
+
+/// The name of the wake word confirmation setting.
+static const std::string WAKEWORD_CONFIRMATION_NAME = "WakeWordConfirmation";
+
+/// The name of the time zone setting.
+static const std::string TIMEZONE_NAME = "TimeZone";
+
+/// The name of the locale setting.
+static const std::string LOCALE_NAME = "Locale";
+
+/// The name of the wake words setting.
+static const std::string WAKE_WORDS_NAME = "WakeWords";
+
+/// The name of the do not disturb confirmation setting.
+static const std::string DO_NOT_DISTURB_NAME = "DoNotDisturb";
 
 /// Key for the root node value containing configuration values for SampleApp.
 static const std::string SAMPLE_APP_CONFIG_KEY("sampleApp");
@@ -280,6 +462,36 @@ static const std::chrono::seconds DEFAULT_REQUEST_TIMEOUT = std::chrono::seconds
 
 /// HTTP Header line specifying URL encoded data
 static const std::string HEADER_LINE_URLENCODED = "Content-Type: application/x-www-form-urlencoded";
+/// The index of the first option in displaying a list of options.
+static const unsigned int OPTION_ENUM_START = 1;
+
+UIManager::UIManager(std::shared_ptr<avsCommon::sdkInterfaces::LocaleAssetsManagerInterface> localeAssetsManager) :
+        m_dialogState{DialogUXState::IDLE},
+        m_capabilitiesState{CapabilitiesObserverInterface::State::UNINITIALIZED},
+        m_capabilitiesError{CapabilitiesObserverInterface::Error::UNINITIALIZED},
+        m_authState{AuthObserverInterface::State::UNINITIALIZED},
+        m_authCheckCounter{0},
+        m_connectionStatus{avsCommon::sdkInterfaces::ConnectionStatusObserverInterface::Status::DISCONNECTED},
+        m_localeAssetsManager{localeAssetsManager} {
+}
+
+static const std::string COMMS_MESSAGE =
+    "+----------------------------------------------------------------------------+\n"
+    "|                          Comms Options:                                    |\n"
+    "|                                                                            |\n"
+    "| Press 'a' followed by Enter to accept an incoming call.                    |\n"
+    "| Press 's' followed by Enter to stop an ongoing call.                       |\n"
+    "| Press 'd' followed by Enter to input dtmf tones.                           |\n"
+    "| Press 'q' to exit Comms Control Mode.                                      |\n"
+    "+----------------------------------------------------------------------------+\n";
+
+static const std::string DTMF_MESSAGE =
+    "+----------------------------------------------------------------------------+\n"
+    "|                              Dtmf Tones:                                   |\n"
+    "|                                                                            |\n"
+    "| Enter dtmf tones followed by Enter.                                        |\n"
+    "|                                                                            |\n"
+    "+----------------------------------------------------------------------------+\n";
 
 void UIManager::onDialogUXStateChanged(DialogUXState state) {
     m_executor.submit([this, state]() {
@@ -328,20 +540,27 @@ void UIManager::onSetIndicator(avsCommon::avs::IndicatorState state) {
     });
 }
 
+void UIManager::onCheckingForAuthorization() {
+    m_executor.submit([this]() {
+        std::ostringstream oss;
+        oss << "Checking for authorization (" << ++m_authCheckCounter << ")...";
+        ConsolePrinter::prettyPrint(oss.str());
+    });
+}
+
 void UIManager::onRequestAuthorization(const std::string& url, const std::string& code) {
     m_executor.submit([this, url, code]() {
         m_authCheckCounter = 0;
         ConsolePrinter::prettyPrint("NOT YET AUTHORIZED");
         std::ostringstream oss;
         auto config = alexaClientSDK::avsCommon::utils::configuration::ConfigurationNode::getRoot();
-        bool registerWithA4B;
-        config[SAMPLE_APP_CONFIG_KEY].getBool(REGISTER_WITH_A4B, &registerWithA4B, false);
+        bool registerWithA4B = true;
+        config[SAMPLE_APP_CONFIG_KEY].getBool(REGISTER_WITH_A4B, &registerWithA4B, true);
         if (registerWithA4B) {
             std::string deviceMakerServiceEndpoint;
             config[SAMPLE_APP_CONFIG_KEY].getString(DEVICE_MAKER_SERVICE_ENDPOINT, &deviceMakerServiceEndpoint, "");
             oss << "\nRegistering device with Alexa for Business";
             oss << "\nAVSdevice maker service endpoint: " << deviceMakerServiceEndpoint;
-
             std::string clientId;
             config[DEVICE_INFO_CONFIG_KEY].getString(CLIENT_ID, &clientId, "");
             oss << "\nClientId: " << clientId;
@@ -377,14 +596,6 @@ void UIManager::onRequestAuthorization(const std::string& url, const std::string
         else {
             oss << "To authorize, browse to: '" << url << "' and enter the code: " << code;
         }
-        ConsolePrinter::prettyPrint(oss.str());
-    });
-}
-
-void UIManager::onCheckingForAuthorization() {
-    m_executor.submit([this]() {
-        std::ostringstream oss;
-        oss << "Checking for authorization (" << ++m_authCheckCounter << ")...";
         ConsolePrinter::prettyPrint(oss.str());
     });
 }
@@ -473,8 +684,60 @@ void UIManager::printSettingsScreen() {
     m_executor.submit([]() { ConsolePrinter::simplePrint(SETTINGS_MESSAGE); });
 }
 
+#ifdef ENABLE_ENDPOINT_CONTROLLERS_MENU
+void UIManager::printEndpointControllerScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(ENDPOINT_CONTROLLER_MESSAGE); });
+}
+#endif
+
+#ifdef POWER_CONTROLLER
+void UIManager::printPowerControllerScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(POWER_CONTROLLER_OPTIONS); });
+}
+#endif
+
+#ifdef TOGGLE_CONTROLLER
+void UIManager::printToggleControllerScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(TOGGLE_CONTROLLER_OPTIONS); });
+}
+#endif
+
+#ifdef MODE_CONTROLLER
+void UIManager::printModeControllerScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(MODE_CONTROLLER_OPTIONS); });
+}
+#endif
+
+#ifdef RANGE_CONTROLLER
+void UIManager::printRangeControllerScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(RANGE_CONTROLLER_OPTIONS); });
+}
+#endif
+
 void UIManager::printLocaleScreen() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint(LOCALE_MESSAGE); });
+    auto supportedLocales = m_localeAssetsManager->getSupportedLocales();
+    auto supportedLocaleCombinations = m_localeAssetsManager->getSupportedLocaleCombinations();
+    auto printLocaleMessage = [supportedLocales, supportedLocaleCombinations]() {
+        auto option = OPTION_ENUM_START;
+        std::string optionString;
+        for (const auto& locale : supportedLocales) {
+            optionString +=
+                "| Press '" + std::to_string(option) + "' followed by Enter to change the locale to " + locale + "\n";
+            option++;
+        }
+        for (const auto& combination : supportedLocaleCombinations) {
+            optionString +=
+                "| Press '" + std::to_string(option) + "' followed by Enter to change the locale combinations to " +
+                settings::toSettingString<avsCommon::sdkInterfaces::LocaleAssetsManagerInterface::Locales>(combination)
+                    .second +
+                "\n";
+            option++;
+        }
+        optionString += "| Press '0' followed by Enter to quit.\n";
+        ConsolePrinter::simplePrint(LOCALE_MESSAGE_HEADER + optionString + LOCALE_MESSAGE_FOOTER);
+    };
+
+    m_executor.submit(printLocaleMessage);
 }
 
 void UIManager::printSpeakerControlScreen() {
@@ -489,22 +752,47 @@ void UIManager::printVolumeControlScreen() {
     m_executor.submit([]() { ConsolePrinter::simplePrint(VOLUME_CONTROL_MESSAGE); });
 }
 
-void UIManager::printESPControlScreen(bool support, const std::string& voiceEnergy, const std::string& ambientEnergy) {
-    m_executor.submit([support, voiceEnergy, ambientEnergy]() {
-        std::string screen = ESP_CONTROL_MESSAGE;
-        screen += "|\n";
-        screen += "| support       = ";
-        screen += support ? "true\n" : "false\n";
-        screen += "| voiceEnergy   = " + voiceEnergy + "\n";
-        screen += "| ambientEnergy = " + ambientEnergy + "\n";
-        screen += "+----------------------------------------------------------------------------+\n";
-        ConsolePrinter::simplePrint(screen);
-    });
+#ifdef ENABLE_PCC
+void UIManager::printPhoneControlScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(PHONE_CONTROL_MESSAGE); });
 }
 
+void UIManager::printCallIdScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(ENTER_CALL_ID_MESSAGE); });
+}
+
+void UIManager::printCallerIdScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(ENTER_CALLER_ID_MESSAGE); });
+}
+#endif
+
+#ifdef ENABLE_MCC
+void UIManager::printMeetingControlScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(MEETING_CONTROL_MESSAGE); });
+}
+
+void UIManager::printSessionIdScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(ENTER_SESSION_ID_MESSAGE); });
+}
+
+void UIManager::printCalendarItemsScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(ENTER_CALENDAR_ITEMS_FILE_PATH_MESSAGE); });
+}
+#endif
+
+#ifdef ENABLE_COMMS
 void UIManager::printCommsControlScreen() {
     m_executor.submit([]() { ConsolePrinter::simplePrint(COMMS_MESSAGE); });
 }
+
+void UIManager::printDtmfScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(DTMF_MESSAGE); });
+}
+
+void UIManager::printDtmfErrorScreen() {
+    m_executor.submit([]() { ConsolePrinter::prettyPrint("Invalid Dtmf Tones"); });
+}
+#endif
 
 void UIManager::printErrorScreen() {
     m_executor.submit([]() { ConsolePrinter::prettyPrint("Invalid Option"); });
@@ -526,8 +814,68 @@ void UIManager::printResetWarning() {
     m_executor.submit([]() { ConsolePrinter::prettyPrint(RESET_WARNING); });
 }
 
+void UIManager::printAlarmVolumeRampScreen() {
+    m_executor.submit([]() {
+        ConsolePrinter::simplePrint(ALARM_VOLUME_RAMP_HEADER);
+        ConsolePrinter::simplePrint(ENABLE_SETTING_MENU);
+    });
+}
+
+void UIManager::printDoNotDisturbScreen() {
+    m_executor.submit([]() {
+        ConsolePrinter::simplePrint(DONOTDISTURB_CONFIRMATION_HEADER);
+        ConsolePrinter::simplePrint(ENABLE_SETTING_MENU);
+    });
+}
+
+void UIManager::printWakeWordConfirmationScreen() {
+    m_executor.submit([]() {
+        ConsolePrinter::simplePrint(WAKEWORD_CONFIRMATION_HEADER);
+        ConsolePrinter::simplePrint(ENABLE_SETTING_MENU);
+    });
+}
+
+void UIManager::printSpeechConfirmationScreen() {
+    m_executor.submit([]() {
+        ConsolePrinter::simplePrint(SPEECH_CONFIRMATION_HEADER);
+        ConsolePrinter::simplePrint(ENABLE_SETTING_MENU);
+    });
+}
+
+void UIManager::printTimeZoneScreen() {
+    m_executor.submit([]() { ConsolePrinter::simplePrint(TIMEZONE_SETTING_MENU); });
+}
+
 void UIManager::microphoneOn() {
     m_executor.submit([this]() { printState(); });
+}
+
+void UIManager::onBooleanSettingNotification(
+    const std::string& name,
+    bool state,
+    settings::SettingNotifications notification) {
+    std::string msg;
+    if (settings::SettingNotifications::LOCAL_CHANGE_FAILED == notification ||
+        settings::SettingNotifications::AVS_CHANGE_FAILED == notification) {
+        msg = "ERROR: Failed to set " + name + ". ";
+    }
+    msg += name + " is " + std::string(state ? "ON" : "OFF");
+    m_executor.submit([msg]() { ConsolePrinter::prettyPrint(msg); });
+}
+
+template <typename SettingType>
+void UIManager::onSettingNotification(
+    const std::string& name,
+    SettingType value,
+    settings::SettingNotifications notification) {
+    std::stringstream stream;
+    if (settings::SettingNotifications::LOCAL_CHANGE_FAILED == notification ||
+        settings::SettingNotifications::AVS_CHANGE_FAILED == notification) {
+        stream << "ERROR: Failed to set " + name + ". ";
+    }
+    stream << name << " is " << settings::toSettingString<SettingType>(value).second;
+    std::string msg = stream.str();
+    m_executor.submit([msg]() { ConsolePrinter::prettyPrint(msg); });
 }
 
 void UIManager::printState() {
@@ -563,14 +911,6 @@ void UIManager::printState() {
     }
 }
 
-void UIManager::printESPDataOverrideNotSupported() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint("Cannot override ESP Value in this device."); });
-}
-
-void UIManager::printESPNotSupported() {
-    m_executor.submit([]() { ConsolePrinter::simplePrint("ESP is not supported in this device."); });
-}
-
 void UIManager::printCommsNotSupported() {
     m_executor.submit([]() { ConsolePrinter::simplePrint("Comms is not supported in this device."); });
 }
@@ -580,6 +920,70 @@ void UIManager::setFailureStatus(const std::string& status) {
         m_failureStatus = status;
         printLimitedHelp();
     }
+}
+
+bool UIManager::configureSettingsNotifications(std::shared_ptr<settings::DeviceSettingsManager> settingsManager) {
+    m_callbacks = SettingCallbacks<DeviceSettingsManager>::create(settingsManager);
+    if (!m_callbacks) {
+        ACSDK_ERROR(LX("configureSettingsNotificationsFailed").d("reason", "createCallbacksFailed"));
+        return false;
+    }
+
+    bool ok =
+        m_callbacks->add<DeviceSettingsIndex::DO_NOT_DISTURB>([this](bool enable, SettingNotifications notifications) {
+            onBooleanSettingNotification(DO_NOT_DISTURB_NAME, enable, notifications);
+        });
+    ok &= m_callbacks->add<DeviceSettingsIndex::ALARM_VOLUME_RAMP>(
+        [this](types::AlarmVolumeRampTypes volumeRamp, SettingNotifications notifications) {
+            onSettingNotification(ALARM_VOLUME_RAMP_NAME, volumeRamp, notifications);
+        });
+    ok &= m_callbacks->add<DeviceSettingsIndex::SPEECH_CONFIRMATION>(
+        [this](settings::SpeechConfirmationSettingType value, SettingNotifications notifications) {
+            onSettingNotification(SPEECH_CONFIRMATION_NAME, value, notifications);
+        });
+    ok &= m_callbacks->add<DeviceSettingsIndex::WAKEWORD_CONFIRMATION>(
+        [this](settings::WakeWordConfirmationSettingType value, SettingNotifications notifications) {
+            onSettingNotification(WAKEWORD_CONFIRMATION_NAME, value, notifications);
+        });
+    ok &= m_callbacks->add<DeviceSettingsIndex::TIMEZONE>(
+        [this](const std::string& value, SettingNotifications notifications) {
+            onSettingNotification(TIMEZONE_NAME, value, notifications);
+        });
+    ok &= m_callbacks->add<DeviceSettingsIndex::LOCALE>(
+        [this](const settings::DeviceLocales& value, SettingNotifications notifications) {
+            onSettingNotification(LOCALE_NAME, value, notifications);
+        });
+    ok &= m_callbacks->add<DeviceSettingsIndex::WAKE_WORDS>(
+        [this](const settings::WakeWords& wakeWords, SettingNotifications notifications) {
+            onSettingNotification(WAKE_WORDS_NAME, wakeWords, notifications);
+        });
+    return ok;
+}
+
+void UIManager::onActiveDeviceConnected(const DeviceAttributes& deviceAttributes) {
+    m_executor.submit([deviceAttributes]() {
+        std::ostringstream oss;
+        oss << "SUPPORTED SERVICES: ";
+        std::string separator = "";
+        for (const auto& supportService : deviceAttributes.supportedServices) {
+            oss << separator << supportService;
+            separator = ", ";
+        }
+        ConsolePrinter::prettyPrint({"BLUETOOTH DEVICE CONNECTED", "Name: " + deviceAttributes.name, oss.str()});
+    });
+}
+
+void UIManager::onActiveDeviceDisconnected(const DeviceAttributes& deviceAttributes) {
+    m_executor.submit([deviceAttributes]() {
+        std::ostringstream oss;
+        oss << "SUPPORTED SERVICES: ";
+        std::string separator = "";
+        for (const auto& supportedService : deviceAttributes.supportedServices) {
+            oss << separator << supportedService;
+            separator = ", ";
+        }
+        ConsolePrinter::prettyPrint({"BLUETOOTH DEVICE DISCONNECTED", "Name: " + deviceAttributes.name, oss.str()});
+    });
 }
 
 }  // namespace sampleApp
