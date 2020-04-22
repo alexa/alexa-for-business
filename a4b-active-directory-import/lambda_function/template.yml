@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  a4b-active-directory-import
+
+  SAM Template for a4b-active-directory-import
+  
+Resources:
+  A4BFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: a4b-active-directory-import/
+      Handler: index.handler
+      Runtime: nodejs12.x
+      FunctionName: A4BUserGroupImport
+      Description: Import Users and Groups from Azure AD into A4B Directory
+      Timeout: 30
+      Policies:
+        - SecretsManagerReadWrite
+        - AlexaForBusinessFullAccess
+        - CloudWatchLogsFullAccess
+      Environment:
+        Variables:
+          debug:  0
+          default_addressbook_name: ImportDefault
+          filter_string:  Enter custom filter string
+          secretsname:  Enter Secrets Manager Name 
+          tenant: Enter Azure AD tenant
+      Events:
+        A4BFunctionSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)
+            Name: a4b-ad-import-schedule
+            Description: Schedule to run a4b-active-directory-import lambda function
+            Enabled: False
+
+Outputs:
+  A4BFunction:
+    Description: "A4B Lambda Function ARN"
+    Value: !GetAtt A4BFunction.Arn
+  A4BFunctionIamRole:
+    Description: "Implicit IAM Role created for A4B function"
+    Value: !GetAtt A4BFunctionRole.Arn
