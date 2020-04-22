@@ -9,7 +9,7 @@ Resources:
   A4BFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: a4b-active-directory-import/
+      CodeUri: .
       Handler: index.handler
       Runtime: nodejs12.x
       FunctionName: A4BUserGroupImport
