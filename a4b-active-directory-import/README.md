@@ -16,7 +16,7 @@ You will also learn how to leverage the AWS Secrets Manager to securely store th
 clientSecret used for OAuth2 authentication. Finally you will use the Alexa for Business API calls to create
 or update contact and address books. All this done through automation via CloudWatch events.
 
-If you are familiar with AWS Serverless Application Model, the repository comes with a **template.yaml** to run the creation of the IAM role with specific permissions, Lambda function, and CloudWatch Event Schedule for you. So all you have to do is configure the first to section dealing with Azure Active Directory and AWS Secrets Manager! 
+If you are familiar with AWS Serverless Application Model, the repository comes with a **template.yaml** to run the creation of the IAM role with specific permissions, Lambda function, and CloudWatch Event Schedule for you. So all you have to do is configure the first two sections dealing with Azure Active Directory and AWS Secrets Manager, then test! 
 
 
 To **Get Started** click the button below:
