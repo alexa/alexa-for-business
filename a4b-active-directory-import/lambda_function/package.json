@@ -1,0 +1,27 @@
+{
+  "name": "a4b-active-directory-import",
+  "version": "1.0.0",
+  "description": "Sync Azure Active Directory (LDAP) to Alexa for Business Directory",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Alexa",
+    "for",
+    "Business"
+  ],
+  "author": "Daniel Podlogar",
+  "license": "ISC",
+  "dependencies": {
+    "@microsoft/microsoft-graph-client": "^2.0.0",
+    "activedirectory2": "^1.3.0",
+    "adal-node": "^0.2.1",
+    "aws-sdk": "^2.535.0",
+    "es6-promise": "^4.2.8",
+    "exceljs": "^3.8.0",
+    "isomorphic-fetch": "^2.2.1",
+    "string-format": "^2.0.0",
+    "uuid": "^3.3.3"
+  }
+}
