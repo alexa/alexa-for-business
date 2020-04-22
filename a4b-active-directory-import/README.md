@@ -1,4 +1,4 @@
-#  Build An Active Directory to Alexa for Business import function (US)
+#  Build An Active Directory to Alexa for Business import function using AWS Lambda (US)
 <img src="https://m.media-amazon.com/images/G/01/mobile-apps/dex/alexa/alexa-skills-kit/tutorials/quiz-game/header._TTH_.png" />
 
 ## Overview
