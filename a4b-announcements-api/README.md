@@ -8,4 +8,4 @@ The message is case-insensitive and the Room name / Room ARN is case-sensitive.
 
 ### Prerequisites
 
-This code should be run with using AWS credentials with AlexaForBusinessFullAccess.
+This code should be run using AWS credentials with AlexaForBusinessFullAccess permissions.
